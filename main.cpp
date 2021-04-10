@@ -192,8 +192,6 @@ int main(){ // Main function
         cout << "Invalid input" << endl; // If none of the commands are fit
     }
 
-    
-
     ourfile.close(); // Closes file
     
     printList(head);
@@ -349,28 +347,20 @@ void add(string linetext, Node *&head){ // Add function (input string of text th
 }
 
 void search(string linetext, Node *&head){ // Search function (input string of text that is batch line)
-    string searchquery = linetext.substr(2,linetext.size()); // Gets everything after command char and space
-    string name = searchquery; // Temporary holding for search query
-    string line, editline;
+    string searchQuery = linetext.substr(2,linetext.size()); // Gets everything after command char and space
+    string storedName = searchQuery; // Temporary holding for search query
+    string name;
     
-    transform(searchquery.begin(), searchquery.end(), searchquery.begin(), ::tolower); // Makes the search query lowercase for easier searching
+    transform(searchQuery.begin(), searchQuery.end(), searchQuery.begin(), ::tolower); // Makes the search query lowercase for easier searching
 
     bool found = false; // To see if search query found
 
     for ( ; head; head = head->next){
-        line = head->name;
+        name = head->name;
+        transform(name.begin(), name.end(), name.begin(), ::tolower); // Makes line lowercase for search
 
-        transform(line.begin(), line.end(), line.begin(), ::tolower); // Makes line lowercase for search
-
-        if (line.find(searchquery) != string::npos){ // See if search query is in line
-            size_t commapos = line.find(","); // Find second comma
-            int progress = 1; // Set string progress to 1
-                
-            string name = head->name;
-            string data = line.substr(commapos+2); // Get data
-
+        if (name.find(searchQuery) != string::npos){ // See if search query is in line
             cout << name << " FOUND" << endl;
-            string word; // Binary
             found = true; // Found value is true now
             
             cout << "High Score: " << head->score << endl;
