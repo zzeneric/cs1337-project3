@@ -24,10 +24,10 @@ struct Node {
 
 // Function prototypes
 bool validate(string type, string query);
-void add(string linetext);
-void search(string linetext);
-void update(string linetext);
-void remove(string linetext);
+void add(string linetext, Node *&head);
+void search(string linetext, Node *&head);
+void update(string linetext, Node *&head);
+void remove(string linetext, Node *&head);
 
 void extract(string line, Node *&head){
     stringstream ss(line); // Stringstream to data to extract individual words
@@ -110,52 +110,17 @@ void printList(Node *head){
     }
 }
 
-int main(){ // Main function
-/* ################  DO NOT MODIFY CODE IN THIS BLOCK ###################### */
-    string temp;  //variable for database filename
-    string batch; //variable for batch filename
-
-    Node *head = NULL;
-
-    cout<<"Enter Database Name: ";
-    cin>>temp;
-    
-    ingest(temp,head);
-    printList(head);
-/* ################  DO NOT MODIFY CODE IN THIS BLOCK ###################### */
-
-   //add your code for main here
-
-   /*
-    cout << "Enter Batch Name: "; // Asks for batch file name
-    cin >> batch;
-    cout << endl; // Add new line
-
-    fstream ourfile;
-    ourfile.open(batch, ios::in);
-
-    string ourline;
-
-    if (ourfile){
-        while (ourfile.good()){
-            getline(ourfile, ourline); // Gets line from databasefile
-            if (ourline != ""){
-                if (ourline[0] == '1'){ // If command char is add
-                    add(ourline);
-                }else if (ourline[0] == '2'){ // If command char is search
-                    search(ourline);
-                }else if (ourline[0] == '3'){ // If command char is update
-                    update(ourline);
-                }else if (ourline[0] == '4'){ // If command char is remove
-                    //remove(ourline);
-                }
-            }
-        }
-    }else{
-        cout << "Invalid input" << endl; // If none of the commands are fit
+void outputList(Node *head){
+    for ( ; head; head = head->next){
+        cout << head->name << " ";
+        cout << head->score << " ";
+        cout << head->initials << " ";
+        cout << head->plays << " ";
+        cout << head->revenue << endl;
     }
 
-    ourfile.close(); // Closes file
+    fstream ourfile;
+    string ourline;
 
     // Removing all spare blank lines
     ourfile.open(database, ios::in); // Reopens file as databasefile now
@@ -181,7 +146,59 @@ int main(){ // Main function
 
     ourfile << tempstring << endl;
 
-    ourfile.close(); // Closes file*/
+    ourfile.close(); // Closes file
+}
+
+int main(){ // Main function
+/* ################  DO NOT MODIFY CODE IN THIS BLOCK ###################### */
+    string temp;  //variable for database filename
+    string batch; //variable for batch filename
+
+    Node *head = NULL;
+
+    //cout<<"Enter Database Name: ";
+    //cin>>temp;
+    temp = "sampledb.dat";
+    
+    ingest(temp,head);
+
+    //cout << "Enter Batch Name: "; // Asks for batch file name
+    //cin >> batch;
+    batch = "batch2.txt";
+
+    cout << endl; // Add new line
+
+    fstream ourfile;
+    ourfile.open(batch, ios::in);
+
+    string ourline;
+
+    if (ourfile){
+        while (ourfile.good()){
+            getline(ourfile, ourline); // Gets line from databasefile
+            if (ourline != ""){
+                if (ourline[0] == '1'){ // If command char is add
+                    add(ourline,head);
+                }else if (ourline[0] == '2'){ // If command char is search
+                    //search(ourline);
+                }else if (ourline[0] == '3'){ // If command char is update
+                    //update(ourline);
+                }else if (ourline[0] == '4'){ // If command char is remove
+                    //remove(ourline);
+                }
+            }
+        }
+    }else{
+        cout << "Invalid input" << endl; // If none of the commands are fit
+    }
+
+    
+
+    ourfile.close(); // Closes file
+    
+    printList(head);
+
+    //outputList(Node *head);
     return 0;
 }
 
@@ -249,9 +266,20 @@ bool validate(string type, string query){ // Global validate function (input the
     return true;
 }
 
-void add(string linetext){ // Add function (input string of text that is batch line)
-    ofstream outfile(database, ios::app); // Append to end of file
+void add(string linetext, Node *&head){ // Add function (input string of text that is batch line)
+    Node *newNode = new Node; // Creates node
+    newNode->next = NULL; // Temporarily assigns node no next value
     
+    if(head == NULL){ // If previous node doesn't exist
+        head = newNode;
+    }else{ // If header node exists
+        Node *temp = head;
+        while(temp->next != NULL){ 
+            temp = temp->next;
+        }
+        temp->next = newNode; // Puts node all the way in the back
+    }
+
     // Find name by extracting string between quotes
     size_t firstquote = linetext.find("\"");
     string firstquotegone = linetext.substr(firstquote+1);
@@ -292,35 +320,32 @@ void add(string linetext){ // Add function (input string of text that is batch l
 
         // Output name
         cout << "Name: " << fullname << endl;
-        outfile << fullname << ", ";
+        newNode->name = fullname;
 
         // Output high score
         cout << "High Score: " << score << endl;
-        outfile << score << ", ";
+        newNode->score = score;
 
         // Output initials
         cout << "Initials: " << initials << endl;
-        outfile << initials << ", ";
+        newNode->initials = initials;
 
         // Revenue plays
         cout << "Plays: " << plays << endl;
-        outfile << plays << ", ";
+        newNode->plays = plays;
 
         // Output revenue
         cout << "Revenue: " << revenue << endl;
-
-        string newrev = revenue;
         
-        string firstpart = newrev.substr(1, newrev.find(".") - 1);
-        string secondpart = newrev.substr(newrev.find(".") + 1, newrev.size());
+        string firstpart = revenue.substr(1, revenue.find(".") - 1);
+        string secondpart = revenue.substr(revenue.find(".") + 1, revenue.size());
+        double newrev = stod(firstpart + "." + secondpart);
 
-        outfile << "$";
-        outfile << firstpart << "." << secondpart << endl;
+        newNode->revenue = newrev;
 
         cout << "\n";
     }
 
-    outfile.close(); // Close outfile
 }
 
 void search(string linetext){ // Search function (input string of text that is batch line)
