@@ -180,9 +180,9 @@ int main(){ // Main function
                 if (ourline[0] == '1'){ // If command char is add
                     add(ourline,head);
                 }else if (ourline[0] == '2'){ // If command char is search
-                    search(ourline,head);
+                    //search(ourline,head);
                 }else if (ourline[0] == '3'){ // If command char is update
-                    //update(ourline);
+                    update(ourline,head);
                 }else if (ourline[0] == '4'){ // If command char is remove
                     //remove(ourline);
                 }
@@ -194,7 +194,7 @@ int main(){ // Main function
 
     ourfile.close(); // Closes file
     
-    printList(head);
+    //printList(head);
 
     //outputList(Node *head);
     return 0;
@@ -360,7 +360,7 @@ void search(string linetext, Node *&head){ // Search function (input string of t
         transform(name.begin(), name.end(), name.begin(), ::tolower); // Makes line lowercase for search
 
         if (name.find(searchQuery) != string::npos){ // See if search query is in line
-            cout << name << " FOUND" << endl;
+            cout << head->name << " FOUND" << endl;
             found = true; // Found value is true now
             
             cout << "High Score: " << head->score << endl;
@@ -373,18 +373,15 @@ void search(string linetext, Node *&head){ // Search function (input string of t
     }
 
     if (found == false){ // If a value was not found
-        cout << name << " NOT FOUND" << endl;
+        cout << storedName << " NOT FOUND" << endl;
     }
 }
 
-void update(string linetext){ // Update function (input string of text that is batch line)
-    ifstream dbfile(database, ios::binary);
-
+void update(string linetext, Node *&head){ // Update function (input string of text that is batch line)
     // Find name by extracting string between quotes
     size_t firstquote = linetext.find("\"");
     string firstquotegone = linetext.substr(firstquote+1);
     size_t secondquote = firstquotegone.find("\"");
-
     string fullname = firstquotegone.substr(0,secondquote);   
 
     // Initializing variables for data extraction
@@ -393,153 +390,68 @@ void update(string linetext){ // Update function (input string of text that is b
 
     string word; // Word to store line from stringstream
 
-    string toupdate, updatequery; // Get the item to update and the value to update to
+    string toUpdate, updateQuery; // Get the item to update and the value to update to
 
     int progress = 1; // Initialize progress value to be used
 
     while (ss >> word) // Loop through stringstream to extract words
     {
         if (progress == 1){ // Update type
-            toupdate = word;
+            toUpdate = word;
 
         }else if (progress == 2){ // Update query
-            updatequery = word;
+            updateQuery = word;
         }
 
         progress++;
     }
 
     bool valid = true; // Input validation
-    if (toupdate == "1"){ // High score
-        if (validate("score",updatequery) == 0){
+    if (toUpdate == "1"){ // High score
+        if (validate("score",updateQuery) == 0){
             valid = false;
         }
-    }else if (toupdate == "2"){ // Initials
-        if (validate("initials",updatequery) == 0){
+    }else if (toUpdate == "2"){ // Initials
+        if (validate("initials",updateQuery) == 0){
             valid = false;
         }
-    }else if (toupdate == "3"){ // Plays
-        if (validate("plays",updatequery) == 0){
+    }else if (toUpdate == "3"){ // Plays
+        if (validate("plays",updateQuery) == 0){
             valid = false;
         }
     }
 
-    string line, tempstring;
+    string line;
 
-    if (dbfile){
-        bool updated = false; // Make update value and set to false, not updated yet
+    bool updated = false;
 
-        while (dbfile.good()){
-            getline(dbfile, line);
-            if (line.find(fullname) != string::npos) { // If fullname was in line
-                updated = true; // Updated value, to output later
+    for ( ; head; head = head->next){
+        line = head->name;
 
-                cout << fullname.substr(0, fullname.size()) << " UPDATED" << endl;
-                cout << "UPDATE TO ";
+        if (line.find(fullname) != string::npos){ // If fullname was in line
+            updated = true; // Updated value, to output later
 
-                if (toupdate == "1"){ // High score
-                    cout << "high score - VALUE " << updatequery << endl;
-                }else if (toupdate == "2"){ // Initials
-                    cout << "initials - VALUE " << updatequery << endl;
-                }else if (toupdate == "3"){ // Plays
-                    cout << "plays - VALUE " << updatequery << endl;
-                }
+            cout << line << " UPDATED" << endl;
+            cout << "UPDATE TO ";
 
-                cout << "Name: " << fullname.substr(0, fullname.size()) << endl;
-
-                progress = 1; // Set progress to 1 to use again
-                word = ""; // Reusing word again
-                
-                string outputstring = fullname + ", ";
-
-                size_t commapos = line.find(","); // Find second comma
-                string newdata = line.substr(commapos+2); // Get data
-
-                stringstream linestring(newdata); // Put line in stringstream to extract words
-                double convertedrevenue = 0;
-
-                while (linestring >> word) { // Loop through stringstream
-                    if (progress == 1){ // High score
-                        if (toupdate == "1"){
-                            stringstream highscore;
-                            highscore << updatequery;
-                            word = highscore.str();
-
-                            outputstring = outputstring + word + ", ";
-                            cout << "High Score: " << updatequery << endl;
-                        }else{
-                            outputstring = outputstring + word + " ";
-
-                            word = word.erase(0, word.find_first_not_of('0'));
-                            cout << "High Score: " << word.substr(0, word.size()-1) << endl;
-                        }
-
-                    }else if (progress == 2){ // Initials
-                        if (toupdate == "2"){
-                            outputstring = outputstring + updatequery + ", ";
-                            cout << "Initials: " << updatequery << endl;
-                        }else{
-                            outputstring = outputstring + word + " ";
-                            cout << "Initials: " << word.substr(0, word.size()-1) << endl;
-                        }                  
-
-                    }else if (progress == 3){ // Plays
-                        if (toupdate == "3"){
-                            convertedrevenue  = stoi(updatequery); // Get integer of plays to recalculate revenue
-                            convertedrevenue = convertedrevenue * 0.25; // Get the money from plays
-
-                            cout << "Plays: " << updatequery << endl;
-
-                            stringstream stream; // Get stringstream to convert integer to string
-                            stream << stoi(updatequery);
-                            string s = stream.str(); // Convert the stringstream to string
-
-                            outputstring = outputstring + s + ", ";
-                        }else{
-                            outputstring = outputstring + word + " ";
-                            word = word.erase(0, word.find_first_not_of('0'));
-                            cout << "Plays: " << word.substr(0, word.size()-1) << endl;
-                        }
-
-                    }else if (progress == 4){ // Revenue
-                        if (convertedrevenue != 0){
-                            stringstream stream; // Get stringstream to convert integer to string
-                            stream << convertedrevenue;
-                            string s = stream.str(); // Convert the stringstream to string
-
-                            outputstring = outputstring + "$" + s;
-                            cout << "Revenue: $" << convertedrevenue << endl;
-                        }else{
-                            outputstring = outputstring + word;
-                            string firstpart = word.substr(1, word.find(".") - 1);
-                            string secondpart = word.substr(word.find(".") + 1, word.size());
-
-                            firstpart = firstpart.erase(0, firstpart.find_first_not_of('0'));
-
-                            cout << "Revenue: $" << firstpart << "." << secondpart << endl;
-                        }
-
-                        
-                    }
-                    progress++;
-                }
-                cout << endl;
-                tempstring = tempstring + outputstring + "\n"; // Put the line string into tempstring
-            }else{
-                tempstring = tempstring + line + "\n"; // Cycle to next line
+            if (toUpdate == "1"){ // High score
+                head->score = stoi(updateQuery);
+                cout << "high score - VALUE " << head->score << endl;
+            }else if (toUpdate == "2"){ // Initials
+                head->initials = updateQuery;
+                cout << "initials - VALUE " << head->initials << endl;
+            }else if (toUpdate == "3"){ // Plays
+                head->plays = stoi(updateQuery);
+                cout << "plays - VALUE " << head->plays << endl;
             }
+
+            cout << "Name: " << head->name << endl;
+            cout << "High Score: " << head->score << endl;
+            cout << "Initials: " << head->initials << endl;
+            cout << "Plays: " << head->plays << endl;
+            cout << "Revenue: $" << head->revenue << endl;
         }
-
-        dbfile.close();
-
-        if (updated == true && valid == true){ // If file updated and everything is valid
-            ofstream outfile(database, ios::binary);
-            outfile << tempstring;
-
-            outfile.close();
-        }
-        
-    }
+    } 
 }
 
 /*void remove(string linetext){ // Remove function (input string of text that is batch line)
