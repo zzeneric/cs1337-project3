@@ -180,7 +180,7 @@ int main(){ // Main function
                 if (ourline[0] == '1'){ // If command char is add
                     add(ourline,head);
                 }else if (ourline[0] == '2'){ // If command char is search
-                    //search(ourline);
+                    search(ourline,head);
                 }else if (ourline[0] == '3'){ // If command char is update
                     //update(ourline);
                 }else if (ourline[0] == '4'){ // If command char is remove
@@ -348,9 +348,7 @@ void add(string linetext, Node *&head){ // Add function (input string of text th
 
 }
 
-void search(string linetext){ // Search function (input string of text that is batch line)
-    ifstream infile(database, ios::binary);
-
+void search(string linetext, Node *&head){ // Search function (input string of text that is batch line)
     string searchquery = linetext.substr(2,linetext.size()); // Gets everything after command char and space
     string name = searchquery; // Temporary holding for search query
     string line, editline;
@@ -359,49 +357,28 @@ void search(string linetext){ // Search function (input string of text that is b
 
     bool found = false; // To see if search query found
 
-    if (infile){
-        while (infile){
-            getline(infile, line);
-            size_t linecomma = line.find(","); // Finds first comma
-            editline = line.substr(0,linecomma); // Gets line to be used
-            transform(editline.begin(), editline.end(), editline.begin(), ::tolower); // Makes line lowercase for search
+    for ( ; head; head = head->next){
+        line = head->name;
 
-            if (editline.find(searchquery) != string::npos){ // See if search query is in line
-                size_t commapos = line.find(","); // Find second comma
-                int progress = 1; // Set string progress to 1
+        transform(line.begin(), line.end(), line.begin(), ::tolower); // Makes line lowercase for search
+
+        if (line.find(searchquery) != string::npos){ // See if search query is in line
+            size_t commapos = line.find(","); // Find second comma
+            int progress = 1; // Set string progress to 1
                 
-                string name = line.substr(0,commapos); // Get name
-                string data = line.substr(commapos+2); // Get data
+            string name = head->name;
+            string data = line.substr(commapos+2); // Get data
 
-                cout << name << " FOUND" << endl;
-                string word; // Binary
-                found = true; // Found value is true now
-                stringstream ss(data); // Convert data to string to extract individual words easier
+            cout << name << " FOUND" << endl;
+            string word; // Binary
+            found = true; // Found value is true now
+            
+            cout << "High Score: " << head->score << endl;
+            cout << "Initials: " << head->initials << endl;
+            cout << "Plays: " << head->plays << endl;
+            cout << "Revenue: $" << head->revenue << endl;
 
-                while (ss >> word) { // Loop through to collect all words
-                    if (progress == 1){ // High score
-                        word = word.erase(0, word.find_first_not_of('0'));
-                        cout << "High Score: " << word.substr(0, word.size()-1) << endl;
-
-                    }else if (progress == 2){ // Initials
-                        cout << "Initials: " << word.substr(0, word.size()-1) << endl;
-
-                    }else if (progress == 3){ // Plays
-                        word = word.erase(0, word.find_first_not_of('0'));
-                        cout << "Plays: " << word.substr(0, word.size()-1) << endl;
-
-                    }else if (progress == 4){ // Revenue
-                        string firstpart = word.substr(1, word.find(".") - 1);
-                        string secondpart = word.substr(word.find(".") + 1, word.size());
-
-                        firstpart = firstpart.erase(0, firstpart.find_first_not_of('0'));
-                        cout << "Revenue: $" << firstpart << "." << secondpart << endl;
-
-                    }
-                    progress++;
-                }
-                cout << endl; // Endl to make new line
-            }
+            cout << endl; // Endl to make new line
         }
     }
 
