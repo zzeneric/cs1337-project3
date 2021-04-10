@@ -12,6 +12,16 @@ using namespace std;
 // Name of database file
 const string database = "freeplay.dat";
 
+struct Node {
+    string name;
+    int score;
+    string initials;
+    int plays;
+    double revenue;
+
+    Node *next;
+};
+
 // Function prototypes
 bool validate(string type, string query);
 void add(string linetext);
@@ -19,32 +29,104 @@ void search(string linetext);
 void update(string linetext);
 void remove(string linetext);
 
-int main(){ // Main function
-/* ################  DO NOT MODIFY CODE IN THIS BLOCK ###################### */
-   string temp;  //variable for database filename
-   string batch; //variable for batch filename
+void extract(string line, Node *&head){
+    stringstream ss(line); // Stringstream to data to extract individual words
 
-   cout<<"Enter Database Name: ";
-   cin>>temp;
+    int score, plays;
+    string name, initials;
+    double revenue;
 
-   ifstream infile(temp, ios::binary);
-   ofstream outfile(database, ios::binary);
-   string line;
-   if (infile)
+    string newdata;
+    size_t commaPos;
+
+    commaPos = line.find(","); // Find second comma
+    name = line.substr(0,commaPos);
+    newdata = line.substr(commaPos+2); // Get data
+
+    commaPos = newdata.find(",");
+    score = stoi(newdata.substr(0,commaPos));
+    newdata = newdata.substr(commaPos+2); // Get data
+
+    commaPos = newdata.find(",");
+    initials = newdata.substr(0,commaPos);
+    newdata = newdata.substr(commaPos+2); // Get data
+
+    commaPos = newdata.find(",");
+    plays = stoi(newdata.substr(0,commaPos));
+    newdata = newdata.substr(commaPos+2); // Get data
+
+    commaPos = newdata.find(",");
+    revenue = stod(newdata.substr(1,commaPos));
+    newdata = newdata.substr(commaPos+2); // Get data
+
+
+    Node *newNode = new Node; // Creates node
+    newNode->next = NULL; // Temporarily assigns node no next value
+
+    newNode->name = name;
+    newNode->score = score;
+    newNode->initials = initials;
+    newNode->plays = plays;
+    newNode->revenue = revenue;
+
+    if(head == NULL){ // If previous node doesn't exist
+        head = newNode;
+    }else{ // If header node exists
+        Node *temp = head;
+        while(temp->next != NULL){ 
+            temp = temp->next;
+        }
+        temp->next = newNode; // Puts node all the way in the back
+    }
+    
+    /*cout << name << " ";
+    cout << score << " ";
+    cout << initials << " ";
+    cout << plays << " ";
+    cout << revenue << endl;*/
+}
+
+void ingest(string temp, Node *&head){
+    ifstream infile(temp, ios::binary);
+    string line;
+    if (infile)
         while (infile.good())
         {
             getline(infile, line);
             if (line != "")
-                outfile << line << "\n";
+                extract(line,head);
         }
 
-   infile.close();
-   outfile.close();
+    infile.close();
+}
+
+void printList(Node *head){
+    for ( ; head; head = head->next){
+        cout << head->name << " ";
+        cout << head->score << " ";
+        cout << head->initials << " ";
+        cout << head->plays << " ";
+        cout << head->revenue << endl;
+    }
+}
+
+int main(){ // Main function
+/* ################  DO NOT MODIFY CODE IN THIS BLOCK ###################### */
+    string temp;  //variable for database filename
+    string batch; //variable for batch filename
+
+    Node *head = NULL;
+
+    cout<<"Enter Database Name: ";
+    cin>>temp;
+    
+    ingest(temp,head);
+    printList(head);
 /* ################  DO NOT MODIFY CODE IN THIS BLOCK ###################### */
 
    //add your code for main here
 
-   
+   /*
     cout << "Enter Batch Name: "; // Asks for batch file name
     cin >> batch;
     cout << endl; // Add new line
@@ -99,7 +181,7 @@ int main(){ // Main function
 
     ourfile << tempstring << endl;
 
-    ourfile.close(); // Closes file
+    ourfile.close(); // Closes file*/
     return 0;
 }
 

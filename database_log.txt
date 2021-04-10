@@ -1,0 +1,20 @@
+RECORD ADDED
+Name: Donkey Kong
+High Score: 500000
+Initials: JWS
+Plays: 25
+Revenue: $6.25
+
+Donkey Kong FOUND
+High Score: 500000
+Initials: JWS
+Plays: 25
+Revenue: $6.25
+
+Donkey Kong UPDATED
+UPDATE TO high score - VALUE 750000
+Name: Donkey Kong
+High Score: 750000
+Initials: JWS
+Plays: 25
+Revenue: $6.25
