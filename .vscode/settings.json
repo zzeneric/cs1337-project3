@@ -7,6 +7,10 @@
         "ranges": "cpp",
         "ostream": "cpp",
         "*.tcc": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "unordered_map": "cpp",
+        "typeinfo": "cpp",
+        "new": "cpp",
+        "iomanip": "cpp"
     }
 }
